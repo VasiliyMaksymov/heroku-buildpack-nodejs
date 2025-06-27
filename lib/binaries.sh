@@ -79,10 +79,18 @@ install_nodejs() {
     fi
   fi
 
-  code=$(curl "$url" -L --silent --fail --retry 5 --retry-max-time 15 --retry-connrefused --connect-timeout 5 -o /tmp/node.tar.gz --write-out "%{http_code}")
-
-  if [ "$code" != "200" ]; then
-    echo "Unable to download node: $code" && false
+  if [[ "$url" == file://* ]]; then
+    local_path="${url#file://}"
+    echo "Copying local node binary from $local_path"
+    if ! cp "$local_path" /tmp/node.tar.gz; then
+      echo "Unable to copy local file: $local_path" && false
+    fi
+  else
+    echo "Downloading and installing node $number from $url"
+    code=$(curl "$url" -L --silent --fail --retry 5 --retry-max-time 15 --retry-connrefused --connect-timeout 5 -o /tmp/node.tar.gz --write-out "%{http_code}")
+    if [ "$code" != "200" ]; then
+      echo "Unable to download node: $code" && false
+    fi
   fi
   rm -rf "${dir:?}"/*
   tar xzf /tmp/node.tar.gz --strip-components 1 -C "$dir"
