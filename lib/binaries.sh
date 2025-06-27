@@ -82,6 +82,15 @@ install_nodejs() {
       ls -l "$dir"
       echo "Setting executable permissions"
       chmod +x "$dir"/bin/* || echo "chmod failed with exit code $?"
+      echo "--- STARTING DIAGNOSTICS ---"
+      echo "Current directory is: $(pwd)"
+      echo "Listing /tmp/ directory:"
+      ls -la /tmp/
+      echo "Listing /tmp/cache/ directory:"
+      ls -la /tmp/cache/ || echo "/tmp/cache/ does not exist"
+      echo "Listing /app/tmp/ directory:"
+      ls -la /app/tmp/ || echo "/app/tmp/ does not exist"
+      echo "--- ENDING DIAGNOSTICS ---"
     else
       echo "Downloading and installing node from $url"
       code=$(curl "$url" -L --silent --fail --retry 5 --retry-max-time 15 --retry-connrefused --connect-timeout 5 -o /tmp/node.tar.gz --write-out "%{http_code}")
