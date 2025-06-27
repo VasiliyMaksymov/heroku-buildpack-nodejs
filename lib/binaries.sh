@@ -60,10 +60,12 @@ install_nodejs() {
   fi
 
   if [[ -n "$NODE_BINARY_URL" ]]; then
-    url="$NODE_BINARY_URL"
+     url="$NODE_BINARY_URL"
     if [[ "$url" == file://* ]]; then
       local_path="${url#file://}"
       echo "Copying local node binary from $local_path"
+      echo "Checking if $local_path exists"
+      ls -l "$local_path" || echo "File $local_path does not exist"
       if ! cp "$local_path" /tmp/node.tar.gz; then
         echo "Unable to copy local file: $local_path" && false
       fi
@@ -75,7 +77,7 @@ install_nodejs() {
       mkdir -p "$dir"
       ls -ld "$dir"
       echo "Removing old contents of $dir"
-      rm -rf "${dir:?}"/*
+      rm -rf "${dir:?}"/* || echo "Failed to remove contents of $dir"
       echo "Extracting /tmp/node.tar.gz to $dir"
       tar xzf /tmp/node.tar.gz --strip-components 1 -C "$dir" || echo "tar failed with exit code $?"
       echo "Listing $dir after extraction"
