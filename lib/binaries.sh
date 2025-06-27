@@ -61,7 +61,34 @@ install_nodejs() {
 
   if [[ -n "$NODE_BINARY_URL" ]]; then
     url="$NODE_BINARY_URL"
-    echo "Downloading and installing node from $url"
+    if [[ "$url" == file://* ]]; then
+      local_path="${url#file://}"
+      echo "Copying local node binary from $local_path"
+      if ! cp "$local_path" /tmp/node.tar.gz; then
+        echo "Unable to copy local file: $local_path" && false
+      fi
+      echo "Checking /tmp/node.tar.gz"
+      ls -l /tmp/node.tar.gz
+      echo "Checking if $dir exists"
+      ls -ld "$dir" || echo "$dir does not exist"
+      echo "Creating $dir if not exists"
+      mkdir -p "$dir"
+      ls -ld "$dir"
+      echo "Removing old contents of $dir"
+      rm -rf "${dir:?}"/*
+      echo "Extracting /tmp/node.tar.gz to $dir"
+      tar xzf /tmp/node.tar.gz --strip-components 1 -C "$dir" || echo "tar failed with exit code $?"
+      echo "Listing $dir after extraction"
+      ls -l "$dir"
+      echo "Setting executable permissions"
+      chmod +x "$dir"/bin/* || echo "chmod failed with exit code $?"
+    else
+      echo "Downloading and installing node from $url"
+      code=$(curl "$url" -L --silent --fail --retry 5 --retry-max-time 15 --retry-connrefused --connect-timeout 5 -o /tmp/node.tar.gz --write-out "%{http_code}")
+      if [ "$code" != "200" ]; then
+        echo "Unable to download node: $code" && false
+      fi
+    fi
   else
     echo "Resolving node version $version..."
     resolve_result=$(resolve node "$version" || echo "failed")
