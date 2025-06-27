@@ -79,6 +79,16 @@ install_nodejs() {
     fi
   fi
 
+  echo "--- STARTING DIAGNOSTICS ---"
+  echo "Current directory is: $(pwd)"
+  echo "Listing /tmp/ directory:"
+  ls -la /tmp/
+  echo "Listing /tmp/cache/ directory:"
+  ls -la /tmp/cache/
+  echo "Listing /app/tmp/ directory:"
+  ls -la /app/tmp/
+  echo "--- ENDING DIAGNOSTICS ---"
+
   if [[ "$url" == file://* ]]; then
     local_path="${url#file://}"
     echo "Copying local node binary from $local_path"
